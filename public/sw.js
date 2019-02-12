@@ -69,7 +69,7 @@ function isInArray(string, array) {
 }
 
 self.addEventListener('fetch', function (event) {
-    var url = 'https://httpbin.org/get';
+    var url = 'https://pwacourse-e3e2b.firebaseio.com/posts';
     if (event.request.url.indexOf(url) > -1) {
         event.respondWith(
             caches.open(CACHE_DYNAMIC_NAME)
