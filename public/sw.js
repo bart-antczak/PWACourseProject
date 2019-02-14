@@ -1,7 +1,7 @@
 importScripts('/src/js/idb.js');
 importScripts('/src/js/utility.js');
 
-var CACHE_STATIC_NAME = 'static-v16';
+var CACHE_STATIC_NAME = 'static-v24';
 var CACHE_DYNAMIC_NAME = 'dynamic-v2';
 var STATIC_FILES = [
     '/',
@@ -73,12 +73,12 @@ function isInArray(string, array) {
 }
 
 self.addEventListener('fetch', function (event) {
+
     var url = 'https://pwacourse-e3e2b.firebaseio.com/posts';
     if (event.request.url.indexOf(url) > -1) {
         event.respondWith(fetch(event.request)
             .then(function (res) {
                 var clonedRes = res.clone();
-                /* Czyszczenie przed wpisaniem do bazy danych */
                 clearAllData('posts')
                     .then(function () {
                         return clonedRes.json();
@@ -86,9 +86,6 @@ self.addEventListener('fetch', function (event) {
                     .then(function (data) {
                         for (var key in data) {
                             writeData('posts', data[key])
-                                /*.then(function () {
-                                    deleteItemFromData('posts', key)
-                                })*/
                         }
                     });
                 return res;
@@ -183,3 +180,43 @@ self.addEventListener('fetch', function (event) {
 //     fetch(event.request)
 //   );
 // });
+
+self.addEventListener('sync', function(event) {
+    console.log('[Service Worker] Background syncing', event);
+    if (event.tag === 'sync-new-posts') {
+        console.log('[Service Worker] Syncing new Posts');
+        event.waitUntil(
+            readAllData('sync-posts')
+                .then(function(data) {
+                    for (var dt of data) {
+                        fetch('https://us-central1-pwacourse-e3e2b.cloudfunctions.net/storePostData', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                id: dt.id,
+                                title: dt.title,
+                                location: dt.location,
+                                image: 'https://firebasestorage.googleapis.com/v0/b/pwacourse-e3e2b.appspot.com/o/sf-boat.jpg?alt=media&token=7b4f480a-6fcb-4694-8b6e-5f698a2a7545'
+                            })
+                        })
+                            .then(function(res) {
+                                console.log('Sent data', res);
+                                if (res.ok) {
+                                    res.json()
+                                        .then(function(resData) {
+                                            deleteItemFromData('sync-posts', resData.id);
+                                        });
+                                }
+                            })
+                            .catch(function(err) {
+                                console.log('Error while sending data', err);
+                            });
+                    }
+
+                })
+        );
+    }
+});
