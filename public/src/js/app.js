@@ -1,4 +1,5 @@
 var deferredPrompt;
+var enableNotificationsButtons = document.querySelectorAll('.enable-notifications');
 
 if (!window.Promise) {
   window.Promise = Promise;
@@ -21,3 +22,29 @@ window.addEventListener('beforeinstallprompt', function(event) {
   deferredPrompt = event;
   return false;
 });
+
+function displayConfirmNotification() {
+    var options = {
+        body: 'You successfully subscribed to our Notification Service!'
+    };
+    new Notification('Successfully subscribed!', options);
+}
+
+function askForNotificationPermission() {
+    Notification.requestPermission(function (result) {
+        console.log('User Choice', result);
+        if (result !== 'granted') {
+            console.log('No notification premission granted!');
+        } else {
+            displayConfirmNotification();
+        }
+    })
+}
+
+/* Sprawdzenie czy wyszukiwarka wspiera notification */
+if ('Notification' in window) {
+    for (var i=0; i < enableNotificationsButtons.length; i++) {
+        enableNotificationsButtons[i].style.display = 'inline-block';
+        enableNotificationsButtons[i].addEventListener('click', askForNotificationPermission);
+    }
+}

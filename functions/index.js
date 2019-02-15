@@ -1,5 +1,5 @@
 var functions = require('firebase-functions');
-var admin = require('firebase-admin');
+var admin = require("firebase-admin");
 var cors = require('cors')({origin: true});
 
 // // Create and Deploy Your First Cloud Functions
@@ -9,7 +9,7 @@ var serviceAccount = require("./pwacourse-e3e2b-firebase-adminsdk-nycf0-637edbff
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    databaseURL: 'https://pwacourse-e3e2b.firebaseio.com/'
+    databaseURL: "https://pwacourse-e3e2b.firebaseio.com"
 });
 
 exports.storePostData = functions.https.onRequest(function(request, response) {
