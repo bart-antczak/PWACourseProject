@@ -51,9 +51,54 @@ function displayConfirmNotification() {
         };
         navigator.serviceWorker.ready
             .then(function (swreg) {
-                swreg.showNotification('Successfully subscribed! (from SW)', options);
+                swreg.showNotification('Successfully subscribed!', options);
             })
     }
+}
+
+function configurePushSub() {
+    // Przypomnienie o sprawdzaniu dostępności SW w przeglądarce
+    if (!('serviceWorker' in navigator)) {
+        return
+    }
+
+    var reg;
+    navigator.serviceWorker.ready
+        .then(function (swreg) {
+            reg = swreg;
+            return swreg.pushManager.getSubscription();
+        })
+        .then(function (sub) {
+            if (sub === null) {
+                // Create a new subscription
+                var vapidPublicKey = 'BLXBI1UPncvFYfKOfqlHc6upNhNLmOYnroAKRiYT5zg4u68Ah6el02P3Rd4o8MXp6CoyJlnb-fvilJLMDpZpytk';
+                var convertedVapidPublicKey = urlBase64ToUint8Array(vapidPublicKey);
+                reg.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: convertedVapidPublicKey
+                });
+            } else {
+                // We have already a sub
+            }
+        })
+        .then(function (newSub) {
+            fetch('https://pwacourse-e3e2b.firebaseio.com/subscriptions.json', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(newSub)
+            })
+        })
+        .then(function (res) {
+            if (res.ok) {
+                displayConfirmNotification();
+            }
+        })
+        .catch(function (err) {
+            console.log(err);
+        })
 }
 
 function askForNotificationPermission() {
@@ -62,13 +107,14 @@ function askForNotificationPermission() {
         if (result !== 'granted') {
             console.log('No notification premission granted!');
         } else {
-            displayConfirmNotification();
+            configurePushSub();
+            //displayConfirmNotification();
         }
     })
 }
 
 /* Sprawdzenie czy wyszukiwarka wspiera notification */
-if ('Notification' in window) {
+if ('Notification' in window && 'serviceWorker' in navigator) {
     for (var i=0; i < enableNotificationsButtons.length; i++) {
         enableNotificationsButtons[i].style.display = 'inline-block';
         enableNotificationsButtons[i].addEventListener('click', askForNotificationPermission);
