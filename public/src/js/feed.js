@@ -6,6 +6,31 @@ var form = document.querySelector('form');
 var titleInput = document.querySelector('#title');
 var locationInput = document.querySelector('#location');
 
+/* Uzyskiwanie dostępu do camery */
+var videoPlayer = document.querySelector('#player');
+var canvasPlayer = document.querySelector('#canvas');
+var captureButton = document.querySelector('#capture-btn');
+var imagePicker = document.querySelector('#image-picker');
+var imagePickerArea = document.querySelector('#pick-image');
+
+function initializeMedia() {
+    if (!('mediaDevices' in navigator)) {
+        navigator.mediaDevices = {};
+    }
+    /* POLYFILL */
+    if (!('getUserMedia' in navigator.mediaDevices)) {
+        navigator.mediaDevices.getUserMedia = function(constraints) {
+            var getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+            if (!getUserMedia) {
+                return Promise.reject(new Error('getUserMedia is not implemented!'));
+            }
+            return Promise(function (resolve, reject) {
+                getUserMedia.call(navigator, constraints, resolve, reject);
+            });
+        }
+    }
+}
+
 function openCreatePostModal() {
     // createPostArea.style.display = 'block';
     // setTimeout(function() {
