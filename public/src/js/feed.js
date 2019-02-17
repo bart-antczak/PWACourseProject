@@ -8,7 +8,7 @@ var locationInput = document.querySelector('#location');
 
 /* Uzyskiwanie dostępu do camery */
 var videoPlayer = document.querySelector('#player');
-var canvasPlayer = document.querySelector('#canvas');
+var canvasElement = document.querySelector('#canvas');
 var captureButton = document.querySelector('#capture-btn');
 var imagePicker = document.querySelector('#image-picker');
 var imagePickerArea = document.querySelector('#pick-image');
@@ -29,12 +29,34 @@ function initializeMedia() {
             });
         }
     }
+
+    navigator.mediaDevices.getUserMedia({video: true})
+        .then(function (stream) {
+            videoPlayer.srcObject = stream;
+            videoPlayer.style.display = 'block';
+        })
+        .catch(function (err) {
+            imagePickerArea.style.display = 'block';
+        })
 }
+
+captureButton.addEventListener('click', function (event) {
+    canvasElement.style.display = 'block';
+    videoPlayer.style.display = 'none';
+    captureButton.style.display = 'none';
+    var context = canvasElement.getContext('2d');
+    context.drawImage(videoPlayer, 0, 0, canvas.width, videoPlayer.videoHeight / (videoPlayer.videoWidth / canvas.width));
+    /* Zatrzymanie na zdjęciu */
+    videoPlayer.srcObject.getVideoTracks().forEach(function (track) {
+        track.stop();
+    });
+});
 
 function openCreatePostModal() {
     // createPostArea.style.display = 'block';
     // setTimeout(function() {
     createPostArea.style.transform = 'translateY(0)';
+    initializeMedia();
     // }, 1);
     if (deferredPrompt) {
         deferredPrompt.prompt();
@@ -64,6 +86,9 @@ function openCreatePostModal() {
 
 function closeCreatePostModal() {
     createPostArea.style.transform = 'translateY(100vh)';
+    imagePickerArea.style.display = 'none';
+    videoPlayer.style.display = 'none';
+    canvasElement.style.display = 'none';
     // createPostArea.style.display = 'none';
 }
 
