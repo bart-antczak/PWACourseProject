@@ -44,6 +44,10 @@ exports.storePostData = functions.https.onRequest(function(request, response) {
                         id: fields.id,
                         title: fields.title,
                         location: fields.location,
+                        rawLocation: {
+                            lat: fields.rawLocationLat,
+                            lng: fields.rawLocationlng
+                        },
                         // Publicznie dostępny url do zdjęcia uploadowanego do firebase
                         image: 'https://firebasestorage.googleapis.com/v0/b/' + bucket.name + '/o/' + encodeURIComponent(file.name) + '?alt=media&token=' + uuid
                     })
