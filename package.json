@@ -6,7 +6,9 @@
   "scripts": {
     "start": "http-server -c-1",
     "generate-sw": "workbox generate:sw",
-    "inject-manifest": "workbox inject:manifest"
+    "inject-manifest": "workbox inject:manifest",
+    "minify": "uglifyjs public/src/js/app.js -o /public/src/js/app.min.js --compress --mangle && uglifyjs public/src/js/feed.js -o /public/src/js/feed.min.js --compress --mangle && uglifyjs public/src/js/fetch.js -o /public/src/js/fetch.min.js --compress --mangle && uglifyjs public/src/js/fetch.js -o /public/src/js/fetch.min.js --compress --mangle",
+    "build": "npm run minify && npm run inject-manifest"
   },
   "keywords": [
     "pwa",
@@ -22,6 +24,7 @@
     "http-server": "^0.10.0"
   },
   "dependencies": {
+    "uglify-js": "^3.4.9",
     "workbox-cli": "^2.1.3"
   }
 }
